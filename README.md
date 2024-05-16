@@ -7,14 +7,14 @@
 - One commit transaction with multiple reveal transactions.
 - One commit transaction with a single reveal transaction.
 
-## [Inscription Example](https://github.com/VincentDebug/go-ord-tx-example)
+## [Inscription Example](https://github.com/simbahebinbo/go-ord-tx-example)
 
 The inscribewithoutnoderpc, inscribewithprivatenoderpc, and inscribewithpublicnoderpc examples demonstrate how to use the go-ord-tx package to create inscriptions.
 
 - inscribewithoutnoderpc: sends raw transactions directly to the network, without using an RPC node;
 - inscribewithprivatenoderpc: uses a private RPC node.
 - inscribewithpublicnoderpc: uses a public RPC node.
-- more see [Inscription Example](https://github.com/VincentDebug/go-ord-tx-example)
+- more see [Inscription Example](https://github.com/simbahebinbo/go-ord-tx-example)
 
 ## Contributing
 

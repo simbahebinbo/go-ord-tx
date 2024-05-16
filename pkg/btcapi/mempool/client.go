@@ -3,7 +3,7 @@ package mempool
 import (
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/wire"
-	"github.com/vincentdebug/go-ord-tx/pkg/btcapi"
+	"github.com/simbahebinbo/go-ord-tx/pkg/btcapi"
 	"io"
 	"log"
 )

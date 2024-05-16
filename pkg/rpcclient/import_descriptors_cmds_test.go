@@ -14,9 +14,9 @@ import (
 
 func TestImportDescriptorsCmds(t *testing.T) {
 	connCfg := &rpcclient.ConnConfig{
-		Host:         "localhost:8336",
-		User:         "yourrpcuser",
-		Pass:         "yourrpcpass",
+		Host:         "52.221.9.230:18332/wallet/newwallet.dat",
+		User:         "testuser",
+		Pass:         "123456",
 		HTTPPostMode: true,
 		DisableTLS:   true,
 	}
@@ -59,11 +59,12 @@ func TestImportDescriptorsCmds(t *testing.T) {
 
 	results, err := ImportDescriptors(client, descriptors)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("%v", err)
 	}
 	if results == nil {
 		log.Fatalf("import failed, nil result")
 	}
+
 	for _, result := range *results {
 		if !result.Success {
 			log.Fatal(errors.New("import failed"))
