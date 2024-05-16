@@ -536,7 +536,7 @@ func (tool *InscriptionTool) Inscribe() (commitTxHash *chainhash.Hash, revealTxH
 	for i := range tool.revealTx {
 		_revealTxHash, err := tool.sendRawTransaction(tool.revealTx[i])
 		if err != nil {
-			return commitTxHash, revealTxHashList, nil, fees, errors.Wrap(err, fmt.Sprintf("send reveal tx error, %d。", i))
+			return commitTxHash, revealTxHashList, nil, fees, errors.Wrap(err, fmt.Sprintf("send reveal tx error, %d.", i))
 		}
 		revealTxHashList[i] = _revealTxHash
 		if len(tool.revealTx) == len(tool.txCtxDataList) {
