@@ -39,7 +39,11 @@ func TestInscribeWithPrivate(t *testing.T) {
 	unspentList, err := client.ListUnspentMinMaxAddresses(1, 9999999, []btcutil.Address{address})
 
 	if err != nil {
-		log.Fatalf("list err err %v", err)
+		log.Fatalf("list unspentList err %v", err)
+	}
+
+	if len(unspentList) == 0 {
+		log.Fatalf("unspentList is empty")
 	}
 
 	for i := range unspentList {
@@ -50,6 +54,10 @@ func TestInscribeWithPrivate(t *testing.T) {
 		commitTxOutPointList = append(commitTxOutPointList, wire.NewOutPoint(inTxid, unspentList[i].Vout))
 	}
 	log.Printf("commitTxOutPointList: %v", commitTxOutPointList)
+
+	if len(commitTxOutPointList) == 0 {
+		log.Fatalf("commitTxOutPointList is empty")
+	}
 
 	dataList := make([]InscriptionData, 0)
 
