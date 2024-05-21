@@ -1,12 +1,16 @@
-package ord
+package exam
 
 import (
+	"fmt"
 	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"github.com/btcsuite/btcd/rpcclient"
 	"github.com/btcsuite/btcd/wire"
+	"github.com/simbahebinbo/go-ord-tx/ord"
 	"log"
+	"net/http"
+	"os"
 	"testing"
 )
 
@@ -15,7 +19,7 @@ func TestInscribeWithPrivate(t *testing.T) {
 	netParams := &chaincfg.RegressionNetParams
 
 	connCfg := &rpcclient.ConnConfig{
-		Host:         "52.221.9.230:28332/wallet/newwallet1",
+		Host:         "52.221.9.230:28332/wallet/newwallet",
 		User:         "testuser",
 		Pass:         "123456",
 		HTTPPostMode: true,
@@ -59,27 +63,33 @@ func TestInscribeWithPrivate(t *testing.T) {
 		log.Fatalf("commitTxOutPointList is empty")
 	}
 
-	dataList := make([]InscriptionData, 0)
+	dataList := make([]ord.InscriptionData, 0)
 
-	dataList = append(dataList, InscriptionData{
+	dataList = append(dataList, ord.InscriptionData{
 		ContentType: "text/plain;charset=utf-8",
 		Body:        []byte("Create for Alice"),
 		Destination: "tb1p3m6qfu0mzkxsmaue0hwekrxm2nxfjjrmv4dvy94gxs8c3s7zns6qcgf8ef",
 	})
 
-	dataList = append(dataList, InscriptionData{
+	dataList = append(dataList, ord.InscriptionData{
 		ContentType: "text/plain;charset=utf-8",
 		Body:        []byte("Create for Bob"),
 		Destination: "tb1pkz6c8cpsszcdq8n2qf8msk45qxmgpl8prwrs544305ew6vrrwc8spraf2z",
 	})
 
-	dataList = append(dataList, InscriptionData{
+	dataList = append(dataList, ord.InscriptionData{
 		ContentType: "text/plain;charset=utf-8",
 		Body:        []byte("Create for Charlie"),
 		Destination: "tb1pvxylf6kejgfa0jnp0e98xhajwwuqw55m0v37p0d8ywr6ang03hhqxmmfh2",
 	})
 
-	request := InscriptionRequest{
+	dataList = append(dataList, ord.InscriptionData{
+		ContentType: "image/jpeg",
+		Body:        readFile(),
+		Destination: "tb1p3m6qfu0mzkxsmaue0hwekrxm2nxfjjrmv4dvy94gxs8c3s7zns6qcgf8ef",
+	})
+
+	request := ord.InscriptionRequest{
 		CommitTxOutPointList: commitTxOutPointList,
 		CommitFeeRate:        2,
 		FeeRate:              1,
@@ -87,7 +97,7 @@ func TestInscribeWithPrivate(t *testing.T) {
 		SingleRevealTxOnly:   false,
 	}
 
-	tool, err := NewInscriptionTool(netParams, client, &request)
+	tool, err := ord.NewInscriptionTool(netParams, client, &request)
 	if err != nil {
 		log.Fatalf("Failed to create inscription tool: %v", err)
 	}
@@ -104,4 +114,23 @@ func TestInscribeWithPrivate(t *testing.T) {
 		log.Println("inscription, " + inscriptions[i])
 	}
 	log.Println("fees: ", fees)
+}
+
+func readFile() []byte {
+	workingDir, err := os.Getwd()
+	if err != nil {
+		log.Fatalf("Error getting current working directory, %v", err)
+	}
+	filePath := fmt.Sprintf("%s/1.jpeg", workingDir)
+	// if file size too max will return sendrawtransaction RPC error: {"code":-26,"message":"tx-size"}
+
+	fileContent, err := os.ReadFile(filePath)
+	if err != nil {
+		log.Fatalf("Error reading file %v", err)
+	}
+
+	contentType := http.DetectContentType(fileContent)
+	log.Printf("file contentType %s", contentType)
+
+	return fileContent
 }
