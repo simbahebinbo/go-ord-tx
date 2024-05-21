@@ -32,8 +32,8 @@ type InscriptionRequest struct {
 	CommitTxPrivateKeyList []*btcec.PrivateKey // If used without RPC,
 	// a local signature is required for committing the commit tx.
 	// Currently, CommitTxPrivateKeyList[i] sign CommitTxOutPointList[i]
-	CommitFeeRate      int64
-	FeeRate            int64
+	CommitFeeRate      float64
+	FeeRate            float64
 	DataList           []InscriptionData
 	SingleRevealTxOnly bool // Currently, the official Ordinal parser can only parse a single NFT per transaction.
 	// When the official Ordinal parser supports parsing multiple NFTs in the future, we can consider using a single reveal transaction.
@@ -206,7 +206,7 @@ func createInscriptionTxCtxData(net *chaincfg.Params, data InscriptionData) (*in
 	}, nil
 }
 
-func (tool *InscriptionTool) buildEmptyRevealTx(singleRevealTxOnly bool, destination []string, revealOutValue, feeRate int64) (int64, error) {
+func (tool *InscriptionTool) buildEmptyRevealTx(singleRevealTxOnly bool, destination []string, revealOutValue int64, feeRate float64) (int64, error) {
 	var revealTx []*wire.MsgTx
 	totalPrevOutput := int64(0)
 	total := len(tool.txCtxDataList)
@@ -235,13 +235,14 @@ func (tool *InscriptionTool) buildEmptyRevealTx(singleRevealTxOnly bool, destina
 				return 0, err
 			}
 		}
-		eachRevealBaseTxFee := int64(tx.SerializeSize()) * feeRate / int64(total)
+		eachRevealBaseTxFee := int64(float64(tx.SerializeSize()) * feeRate / float64(total))
 		prevOutput := (revealOutValue + eachRevealBaseTxFee) * int64(total)
 		{
 			emptySignature := make([]byte, 64)
 			emptyControlBlockWitness := make([]byte, 33)
 			for i := 0; i < total; i++ {
-				fee := (int64(wire.TxWitness{emptySignature, tool.txCtxDataList[i].inscriptionScript, emptyControlBlockWitness}.SerializeSize()+2+3) / 4) * feeRate
+				txwitness := wire.TxWitness{emptySignature, tool.txCtxDataList[i].inscriptionScript, emptyControlBlockWitness}
+				fee := int64((float64(txwitness.SerializeSize()+2+3) / 4) * feeRate)
 				tool.txCtxDataList[i].revealTxPrevOutput = &wire.TxOut{
 					PkScript: tool.txCtxDataList[i].commitTxAddressPkScript,
 					Value:    revealOutValue + eachRevealBaseTxFee + fee,
@@ -259,11 +260,12 @@ func (tool *InscriptionTool) buildEmptyRevealTx(singleRevealTxOnly bool, destina
 			if err != nil {
 				return 0, err
 			}
-			prevOutput := revealOutValue + int64(tx.SerializeSize())*feeRate
+			prevOutput := revealOutValue + int64(float64(tx.SerializeSize())*feeRate)
 			{
 				emptySignature := make([]byte, 64)
 				emptyControlBlockWitness := make([]byte, 33)
-				fee := (int64(wire.TxWitness{emptySignature, tool.txCtxDataList[i].inscriptionScript, emptyControlBlockWitness}.SerializeSize()+2+3) / 4) * feeRate
+				txWitness := wire.TxWitness{emptySignature, tool.txCtxDataList[i].inscriptionScript, emptyControlBlockWitness}
+				fee := int64((float64(txWitness.SerializeSize()+2+3) / 4) * feeRate)
 				prevOutput += fee
 				tool.txCtxDataList[i].revealTxPrevOutput = &wire.TxOut{
 					PkScript: tool.txCtxDataList[i].commitTxAddressPkScript,
@@ -312,7 +314,7 @@ func (tool *InscriptionTool) getTxOutByOutPoint(outPoint *wire.OutPoint) (*wire.
 	return txOut, nil
 }
 
-func (tool *InscriptionTool) buildCommitTx(commitTxOutPointList []*wire.OutPoint, totalRevealPrevOutput, commitFeeRate int64) error {
+func (tool *InscriptionTool) buildCommitTx(commitTxOutPointList []*wire.OutPoint, totalRevealPrevOutput int64, commitFeeRate float64) error {
 	totalSenderAmount := btcutil.Amount(0)
 	tx := wire.NewMsgTx(wire.TxVersion)
 	var changePkScript *[]byte
