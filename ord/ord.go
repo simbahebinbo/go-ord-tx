@@ -502,7 +502,7 @@ func (tool *InscriptionTool) GetRevealTxHexList() ([]string, error) {
 
 func (tool *InscriptionTool) sendRawTransaction(tx *wire.MsgTx) (*chainhash.Hash, error) {
 	if tool.client.rpcClient != nil {
-		return tool.client.rpcClient.SendRawTransaction(tx, false)
+		return tool.client.rpcClient.SendRawTransaction(tx, true)
 	} else {
 		return tool.client.btcApiClient.BroadcastTx(tx)
 	}
